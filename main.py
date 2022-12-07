@@ -13,3 +13,17 @@ hydrazine = Propellant([1.23078, -6.2668e-4, -4.5284e-7])
 
 # Material definitions
 ...
+
+# Temperature
+T_hot = 357
+T_cold = 310
+T = (T_hot + T_cold) / 2
+
+# Propellant masses
+m_hydrazine, m_mon25 = propellant_masses(587.90, 0.85, 2)
+
+hydrazine_tank = FuelTank.from_R(0.3, 27.6e5, m_hydrazine, T, None, hydrazine)
+print(hydrazine_tank.L)
+
+mon25_tank = FuelTank.from_R(0.2, 27.6e5, m_mon25, T, None, mon25)
+print(mon25_tank.L)

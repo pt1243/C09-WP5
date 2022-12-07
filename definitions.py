@@ -64,7 +64,6 @@ class FuelTank:
             T: float | int,  # Propellant temperature [K]
             material: Material,  # Tank material
             propellant: Propellant,  # Propellant
-            stress_safety_factor: float | int  # Safety factor below the yield stress to use
             ) -> None:
         self._L = L
         self._R = R
@@ -72,7 +71,6 @@ class FuelTank:
         self._material = material
         self._propellant = propellant
         self._propellant_mass = self.volume * propellant.density(T)
-        self._t_1 = p * R / (material.sigma_y / stress_safety_factor)
 
     @classmethod
     def from_R(cls,
