@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import List
+from typing import List, Union
 from numpy import pi, polynomial
 
 
@@ -58,10 +58,10 @@ class Propellant:
 class FuelTank:
     def __init__(
             self,
-            L: float | int,  # Tank length [m]
-            R: float | int,  # Tank radius [m]
-            p: float | int,  # Tank pressure [Pa]
-            T: float | int,  # Propellant temperature [K]
+            L: Union[float, int],  # Tank length [m]
+            R: Union[float, int],  # Tank radius [m]
+            p: Union[float, int],  # Tank pressure [Pa]
+            T: Union[float, int],  # Propellant temperature [K]
             material: Material,  # Tank material
             propellant: Propellant,  # Propellant
             ) -> None:
@@ -74,10 +74,10 @@ class FuelTank:
 
     @classmethod
     def from_R(cls,
-               R: float | int,  # Tank radius [m]
-               p: float | int,  # Tank pressure [Pa]
-               m: float | int,  # Propellant mass [kg]
-               T: float | int,  # Propellant temperature [K]
+               R: Union[float, int],  # Tank radius [m]
+               p: Union[float, int],  # Tank pressure [Pa]
+               m: Union[float, int],  # Propellant mass [kg]
+               T: Union[float, int],  # Propellant temperature [K]
                material: Material,  # Tank material
                propellant: Propellant,  # Propellant type
                ) -> FuelTank:
@@ -96,10 +96,10 @@ class FuelTank:
 
     @classmethod
     def from_L(cls,
-               L: float | int,  # Tank length [m]
-               p: float | int,  # Tank pressure [Pa]
-               m: float | int,  # Propellant mass [kg]
-               T: float | int,  # Propellant temperature [K]
+               L: Union[float, int],  # Tank length [m]
+               p: Union[float, int],  # Tank pressure [Pa]
+               m: Union[float, int],  # Propellant mass [kg]
+               T: Union[float, int],  # Propellant temperature [K]
                material: Material,  # Tank material
                propellant: Propellant,  # Propellant type
                ) -> FuelTank:
