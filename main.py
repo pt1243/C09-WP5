@@ -1,7 +1,8 @@
+from typing import Union
 from definitions import Material, Propellant, FuelTank
 
 
-def propellant_masses(m_propellant: int | float, mixture_ratio: int | float, number_of_tanks: int):
+def propellant_masses(m_propellant: Union[float, int], mixture_ratio: Union[float, int], number_of_tanks: int):
     m_fuel = m_propellant / (1 + mixture_ratio)
     m_ox = m_propellant - m_fuel
     return m_fuel / number_of_tanks, m_ox / number_of_tanks
@@ -25,5 +26,5 @@ m_hydrazine, m_mon25 = propellant_masses(587.90, 0.85, 2)
 hydrazine_tank = FuelTank.from_R(0.3, 27.6e5, m_hydrazine, T, None, hydrazine)
 print(hydrazine_tank.L)
 
-mon25_tank = FuelTank.from_R(0.2, 27.6e5, m_mon25, T, None, mon25)
+mon25_tank = FuelTank.from_R(0.25, 27.6e5, m_mon25, T, None, mon25)
 print(mon25_tank.L)
