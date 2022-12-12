@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Union
-from numpy import pi, polynomial
+from numpy import pi, polynomial, sqrt
 
 
 class Material:
@@ -114,16 +114,29 @@ class FuelTank:
         return tank
 
     @property
-    def L(self):
+    def L(self) -> float:
         """Total length [m]"""
         return self._L
 
     @property
-    def R(self):
+    def R(self) -> float:
         """Radius [m]"""
         return self._R
 
     @property
-    def volume(self):
+    def volume(self) -> float:
         """Fuel tank volume in [m^3]."""
         return pi * self._R ** 2 * (4/3 * self._R + self._L - 2 * self._R)
+
+    def t_1_pressure(self, SF_pressure: Union[float, int]) -> float:
+        """Calculate t_1 in [m] required to withstand the internal pressure."""
+        return self.p * self.R / (self._material.sigma_y / SF_pressure)
+    
+    def t_2_pressure(self, SF_pressure: Union[float, int]) -> float:
+        """Calculate t_2 in [m] required to withstand the internal pressure."""
+        return self.t_1_pressure() * 0.5
+
+    def passes_Euler_buckling_check(self, SF_Euler: Union[float, int]) -> bool:
+        """Returns whether or not the tank dimensions can withstand Euler buckling."""
+        max_L_r = sqrt(pi ** 2 * self._material.E / (2 * (self._material.sigma_y / SF_Euler)))
+        return (self.L / self.R) <= max_L_r

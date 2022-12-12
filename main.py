@@ -13,7 +13,7 @@ mon25 = Propellant([1.6697, 4.622e-4, -4.80e-6])
 hydrazine = Propellant([1.23078, -6.2668e-4, -4.5284e-7])
 
 # Material definitions
-...
+Ti_6Al_4V = Material(113.8e9, 0.342, 880e6, 4430, 1)
 
 # Temperature
 T_hot = 357
@@ -23,8 +23,8 @@ T = (T_hot + T_cold) / 2
 # Propellant masses
 m_hydrazine, m_mon25 = propellant_masses(587.90, 0.85, 2)
 
-hydrazine_tank = FuelTank.from_R(0.3, 27.6e5, m_hydrazine, T, None, hydrazine)
+hydrazine_tank = FuelTank.from_R(0.3, 27.6e5 * 1.5, m_hydrazine, T, Ti_6Al_4V, hydrazine)
 print(hydrazine_tank.L)
 
-mon25_tank = FuelTank.from_R(0.25, 27.6e5, m_mon25, T, None, mon25)
+mon25_tank = FuelTank.from_R(0.25, 27.6e5 * 1.5, m_mon25, T, Ti_6Al_4V, mon25)
 print(mon25_tank.L)
