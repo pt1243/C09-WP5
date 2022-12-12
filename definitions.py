@@ -130,11 +130,11 @@ class FuelTank:
 
     def t_1_pressure(self, SF_pressure: Union[float, int]) -> float:
         """Calculate t_1 in [m] required to withstand the internal pressure."""
-        return self.p * self.R / (self._material.sigma_y / SF_pressure)
+        return self._p * self.R / (self._material.sigma_y / SF_pressure)
     
     def t_2_pressure(self, SF_pressure: Union[float, int]) -> float:
         """Calculate t_2 in [m] required to withstand the internal pressure."""
-        return self.t_1_pressure() * 0.5
+        return self.t_1_pressure(SF_pressure) * 0.5
 
     def passes_Euler_buckling_check(self, SF_Euler: Union[float, int]) -> bool:
         """Returns whether or not the tank dimensions can withstand Euler buckling."""
