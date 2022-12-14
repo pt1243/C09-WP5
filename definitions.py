@@ -136,7 +136,14 @@ class FuelTank:
         """Calculate t_2 in [m] required to withstand the internal pressure."""
         return self.t_1_pressure(SF_pressure) * 0.5
 
-    def passes_Euler_buckling_check(self, SF_Euler: Union[float, int]) -> bool:
+    def L_R_ratio(self):
+        """Calculate the L/R ratio of the tank."""
+        return self.L / self.R
+    
+    def max_L_R_ratio(self) -> bool:
+        """Calculate the maximum L/R ratio to withstand Euler buckling."""
+        return sqrt(pi ** 2 * self._material.E / (2 * self._material.sigma_y ))
+
+    def passes_Euler_buckling_check(self) -> bool:
         """Returns whether or not the tank dimensions can withstand Euler buckling."""
-        max_L_r = sqrt(pi ** 2 * self._material.E / (2 * (self._material.sigma_y / SF_Euler)))
-        return (self.L / self.R) <= max_L_r
+        return self.L_R_ratio() <= self.max_L_R_ratio()
