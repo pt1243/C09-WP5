@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Union
-from numpy import pi, polynomial
+from numpy import pi, polynomial, sqrt, exp
 
 
 class Material:
@@ -11,37 +11,11 @@ class Material:
             sigma_y: float | int,
             density: float | int,
             cost: float | int) -> None:
-        self._E = E
-        self._poissons_ratio = poissons_ratio
-        self._sigma_y = sigma_y
-        self._density = density
-        self._cost = cost
-
-    @property
-    def E(self):
-        """Young's Modulus"""
-        return self._E
-
-    @property
-    def poissons_ratio(self):
-        """Poisson's ratio"""
-        return self._poissons_ratio
-
-    @property
-    def sigma_y(self):
-        """Yield stress"""
-        return self._sigma_y
-
-    @property
-    def density(self):
-        """Density"""
-        return self._density
-
-    @property
-    def cost(self):
-        """Material cost"""
-        return self._cost
-
+        self.E = E
+        self.poissons_ratio = poissons_ratio
+        self.sigma_y = sigma_y
+        self.density = density
+        self.cost = cost
 
 class Propellant:
     def __init__(self, density_coefficients: List[float | int]) -> None:
@@ -65,12 +39,12 @@ class FuelTank:
             material: Material,  # Tank material
             propellant: Propellant,  # Propellant
             ) -> None:
-        self._L = L
-        self._R = R
-        self._p = p
-        self._material = material
-        self._propellant = propellant
-        self._propellant_mass = self.volume * propellant.density(T)
+        self.L = L
+        self.R = R
+        self.p = p
+        self.material = material
+        self.propellant = propellant
+        self.propellant_mass = self.volume() * self.propellant.density(T)
 
     @classmethod
     def from_R(cls,
@@ -113,17 +87,43 @@ class FuelTank:
         tank._propellant_mass = m
         return tank
 
-    @property
-    def L(self):
-        """Total length [m]"""
-        return self._L
-
-    @property
-    def R(self):
-        """Radius [m]"""
-        return self._R
-
-    @property
-    def volume(self):
+    def volume(self) -> float:
         """Fuel tank volume in [m^3]."""
-        return pi * self._R ** 2 * (4/3 * self._R + self._L - 2 * self._R)
+        return pi * self.R ** 2 * (4/3 * self.R + self.L - 2 * self.R)        
+
+    def t_1_pressure(self, SF_pressure: Union[float, int]) -> float:
+        """Calculate t_1 in [m] required to withstand the internal pressure."""
+        return self.p * self.R / (self.material.sigma_y / SF_pressure)
+    
+    def t_2_pressure(self, SF_pressure: Union[float, int]) -> float:
+        """Calculate t_2 in [m] required to withstand the internal pressure."""
+        return self.t_1_pressure(SF_pressure) * 0.5
+
+    def L_R_ratio(self):
+        """Calculate the L/R ratio of the tank."""
+        return self.L / self.R
+    
+    def max_L_R_ratio(self) -> bool:
+        """Calculate the maximum L/R ratio to withstand Euler buckling."""
+        return sqrt(pi ** 2 * self.material.E / (2 * self.material.sigma_y))
+
+    def passes_Euler_buckling_check(self) -> bool:
+        """Returns whether or not the tank dimensions can withstand Euler buckling."""
+        return self.L_R_ratio() <= self.max_L_R_ratio()
+    
+    def shell_buckling(self, t_1: Union[float, int]) -> float:
+        """Calculates the critical stress for shell buckling."""
+        lambda_half_waves = 214
+        k = lambda_half_waves \
+            + (12 / pi ** 4) * (self.L ** 4 / (self.R ** 2 * t_1 ** 2)) \
+            * (1 - self.material.poissons_ratio ** 2) * (1 / lambda_half_waves)
+        Q = (self.p / self.material.E) * (self.R / t_1) ** 2
+        sigma_cr = (1.983 - 0.983 * exp(-23.14 * Q)) * k * (pi ** 2 * self.material.E) \
+            / (12 * (1 - self.material.poissons_ratio ** 2)) * (t_1 / self.L) ** 2
+        return sigma_cr
+
+    def tank_mass(self, t_1: Union[float, int], t_2: Union[float, int]) -> float:
+        """Returns the tank mass in [kg]."""
+        ends_mass = 4 * pi * self.R ** 2 * self.material.density * t_2
+        cylinder_mass = (self.L - 2 * self.R) * 2 * pi * self.R * t_1 * self.material.density
+        return ends_mass + cylinder_mass
