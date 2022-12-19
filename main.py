@@ -39,3 +39,9 @@ print(f'    t_2 for pressure = {mon25_tank.t_2_pressure(1.1) * 1000} mm')
 print(f'    L/R ratio: {mon25_tank.L_R_ratio()}')
 print(f'    L/R maximum ratio for Euler buckling: {mon25_tank.max_L_R_ratio()}')
 print(f'    Passes Euler buckling check: {mon25_tank.passes_Euler_buckling_check()}')
+
+
+print(hydrazine_tank.tank_mass(1.55 / 1000, 0.78 / 1000))
+print(hydrazine_tank.L)
+
+print(hydrazine_tank.shell_buckling(t_1=0.0015))
