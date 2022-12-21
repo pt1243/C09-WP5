@@ -17,6 +17,7 @@ class Material:
         self.density = density
         self.cost = cost
 
+
 class Propellant:
     def __init__(self, density_coefficients: List[float | int]) -> None:
         self._density_coefficients = density_coefficients
@@ -89,12 +90,12 @@ class FuelTank:
 
     def volume(self) -> float:
         """Fuel tank volume in [m^3]."""
-        return pi * self.R ** 2 * (4/3 * self.R + self.L - 2 * self.R)        
+        return pi * self.R ** 2 * (4/3 * self.R + self.L - 2 * self.R)
 
     def t_1_pressure(self, SF_pressure: Union[float, int]) -> float:
         """Calculate t_1 in [m] required to withstand the internal pressure."""
         return self.p * self.R / (self.material.sigma_y / SF_pressure)
-    
+
     def t_2_pressure(self, SF_pressure: Union[float, int]) -> float:
         """Calculate t_2 in [m] required to withstand the internal pressure."""
         return self.t_1_pressure(SF_pressure) * 0.5
@@ -102,7 +103,7 @@ class FuelTank:
     def L_R_ratio(self):
         """Calculate the L/R ratio of the tank."""
         return self.L / self.R
-    
+
     def max_L_R_ratio(self) -> bool:
         """Calculate the maximum L/R ratio to withstand Euler buckling."""
         return sqrt(pi ** 2 * self.material.E / (2 * self.material.sigma_y))
@@ -110,7 +111,7 @@ class FuelTank:
     def passes_Euler_buckling_check(self) -> bool:
         """Returns whether or not the tank dimensions can withstand Euler buckling."""
         return self.L_R_ratio() <= self.max_L_R_ratio()
-    
+
     def shell_buckling(self, t_1: Union[float, int]) -> float:
         """Calculates the critical stress for shell buckling."""
         lambda_half_waves = 214
@@ -127,3 +128,14 @@ class FuelTank:
         ends_mass = 4 * pi * self.R ** 2 * self.material.density * t_2
         cylinder_mass = (self.L - 2 * self.R) * 2 * pi * self.R * t_1 * self.material.density
         return ends_mass + cylinder_mass
+
+    def compressive_stress(self, load: Union[float, int], t_1: Union[float, int]) -> float:
+        """Returns the compressive stress on the tank in [Pa]."""
+        load_bearing_area = 2 * pi * self.R * t_1
+        sigma = load / load_bearing_area
+        return sigma
+
+    def passes_shell_buckling_check(self, load: Union[float, int], t_1: Union[float, int],
+                                 SF_shell: Union[float, int]) -> bool:
+        """Check if the design passes the shell buckling failure test."""
+        return self.compressive_stress(load, t_1) * SF_shell <= self.shell_buckling(t_1)
