@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Union
-from numpy import pi, polynomial, sqrt, exp
+from numpy import pi, polynomial, sqrt, exp, cbrt, inf
 
 
 class Material:
@@ -66,7 +66,7 @@ class FuelTank:
         else:
             L = 2 * R + (desired_volume - end_cap_volume) / (pi * R ** 2)
         tank = cls(L, R, p, T, material, propellant)
-        tank._propellant_mass = m
+        tank.propellant_mass = m
         return tank
 
     @classmethod
@@ -85,7 +85,24 @@ class FuelTank:
         radius_equation_roots = radius_equation.roots()
         R = radius_equation_roots[1]
         tank = cls(L, R, p, T, material, propellant)
-        tank._propellant_mass = m
+        tank.propellant_mass = m
+        return tank
+    
+    @classmethod
+    def from_L_R_ratio(cls,
+                       L_R_ratio: Union[float, int],  # Length/radius ratio [-]
+                       p: Union[float, int],  # Tank pressure [Pa]
+                       m: Union[float, int],  # Propellant mass [kg]
+                       T: Union[float, int],  # Propellant temperature [K]
+                       material: Material,  # Tank material
+                       propellant: Propellant,  # Propellant type
+                       ) -> FuelTank:
+        """Creates a fuel tank of a given length to radius ratio to hold a certain mass [kg] of propellant."""
+        desired_volume = m / propellant.density(T)
+        R = cbrt(desired_volume / (pi * (L_R_ratio - 2) + 4/3 * pi))
+        L = R * L_R_ratio
+        tank = cls(L, R, p, T, material, propellant)
+        tank.propellant_mass = m
         return tank
 
     def volume(self) -> float:
@@ -112,13 +129,23 @@ class FuelTank:
         """Returns whether or not the tank dimensions can withstand Euler buckling."""
         return self.L_R_ratio() <= self.max_L_R_ratio()
 
+    def calculate_k(self, lambda_half_waves: Union[int, float], t_1: Union[int, float]) -> float:
+        k = lambda_half_waves + ((12 / (pi**4)) * (self.L**4 / ((self.R)**2 * (t_1)**2)) * (1 - (self.material.poissons_ratio)**2) * (1/lambda_half_waves))
+        return k
+
+    def calculate_min_k(self, t_1: Union[int, float]) -> float:
+        """Returns the value of lambda to minimize the equation for k."""
+        min_k = inf
+        for i in range(1, 10000):
+            k = self.calculate_k(i, t_1)
+            if k < min_k:
+                min_k = k
+        return min_k
+
     def shell_buckling(self, t_1: Union[float, int]) -> float:
         """Calculates the critical stress for shell buckling."""
-        lambda_half_waves = 214
-        k = lambda_half_waves \
-            + (12 / pi ** 4) * (self.L ** 4 / (self.R ** 2 * t_1 ** 2)) \
-            * (1 - self.material.poissons_ratio ** 2) * (1 / lambda_half_waves)
-        Q = (self.p / self.material.E) * (self.R / t_1) ** 2
+        k = self.calculate_min_k(t_1)
+        Q = (self.p / self.material.E) * (self.R / t_1)**2
         sigma_cr = (1.983 - 0.983 * exp(-23.14 * Q)) * k * (pi ** 2 * self.material.E) \
             / (12 * (1 - self.material.poissons_ratio ** 2)) * (t_1 / self.L) ** 2
         return sigma_cr
