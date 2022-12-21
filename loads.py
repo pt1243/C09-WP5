@@ -47,6 +47,3 @@ def loads(distance_hydrazine: Union[int, float],
     F_mon25 += (M / (2 * distance_mon25))
     
     return F_hydrazine, F_mon25
-    
-
-
