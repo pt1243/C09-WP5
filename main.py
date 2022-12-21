@@ -1,5 +1,6 @@
 from typing import Union
 from definitions import Material, Propellant, FuelTank
+from loads import loads
 
 
 def propellant_masses(m_propellant: Union[float, int], mixture_ratio: Union[float, int], number_of_tanks: int):
@@ -20,20 +21,25 @@ T_hot = 357
 T_cold = 310
 T = (T_hot + T_cold) / 2
 
-# Tank loads
-hydrazine_tank_load = 11219  # [N]
-mon25_tank_load = 9536.2  # [N]
+# Distances
+hydrazine_distance = 0.8
+mon25_distance = 0.8
+
 
 # Propellant masses
 m_hydrazine, m_mon25 = propellant_masses(587.90, 0.85, 2)
 
 # Create propellant tanks
-hydrazine_tank = FuelTank.from_R(0.3, 27.6e5 * 1.5, m_hydrazine, T, Ti_6Al_4V, hydrazine)
-mon25_tank = FuelTank.from_R(0.25, 27.6e5 * 1.5, m_mon25, T, Ti_6Al_4V, mon25)
+hydrazine_tank = FuelTank.from_L_R_ratio(2.6, 27.6e5 * 1.5, m_hydrazine, T, Ti_6Al_4V, hydrazine)
+mon25_tank = FuelTank.from_L(hydrazine_tank.L, 27.6e5 * 1.5, m_mon25, T, Ti_6Al_4V, mon25)
 
 # Initial thicknesses from pressure
 hydrazine_t_1_pressure = hydrazine_tank.t_1_pressure(1.1)
 mon25_t_1_pressure = mon25_tank.t_1_pressure(1.1)
+
+# Loads
+hydrazine_tank_load, mon25_tank_load = loads(hydrazine_distance, mon25_distance)
+print(hydrazine_tank_load, mon25_tank_load)
 
 print('Hydrazine tank:')
 print(f'    t_1 for pressure: {hydrazine_tank.t_1_pressure(1.1) * 1000} mm')

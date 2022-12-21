@@ -1,6 +1,6 @@
 from __future__ import annotations
 from typing import List, Union
-from numpy import pi, polynomial, sqrt, exp
+from numpy import pi, polynomial, sqrt, exp, cbrt
 
 
 class Material:
@@ -66,7 +66,7 @@ class FuelTank:
         else:
             L = 2 * R + (desired_volume - end_cap_volume) / (pi * R ** 2)
         tank = cls(L, R, p, T, material, propellant)
-        tank._propellant_mass = m
+        tank.propellant_mass = m
         return tank
 
     @classmethod
@@ -85,7 +85,24 @@ class FuelTank:
         radius_equation_roots = radius_equation.roots()
         R = radius_equation_roots[1]
         tank = cls(L, R, p, T, material, propellant)
-        tank._propellant_mass = m
+        tank.propellant_mass = m
+        return tank
+    
+    @classmethod
+    def from_L_R_ratio(cls,
+                       L_R_ratio: Union[float, int],  # Length/radius ratio [-]
+                       p: Union[float, int],  # Tank pressure [Pa]
+                       m: Union[float, int],  # Propellant mass [kg]
+                       T: Union[float, int],  # Propellant temperature [K]
+                       material: Material,  # Tank material
+                       propellant: Propellant,  # Propellant type
+                       ) -> FuelTank:
+        """Creates a fuel tank of a given length to radius ratio to hold a certain mass [kg] of propellant."""
+        desired_volume = m / propellant.density(T)
+        R = cbrt(desired_volume / (pi * (L_R_ratio - 2) + 4/3 * pi))
+        L = R * L_R_ratio
+        tank = cls(L, R, p, T, material, propellant)
+        tank.propellant_mass = m
         return tank
 
     def volume(self) -> float:
