@@ -11,7 +11,7 @@ E = 72*10**9
 sns.set_theme(style='darkgrid')
 #Stiffness of the S/C Adapter
 
-K = E/(h/(t*np.pi*(d_2-d_1))*(np.log(abs(d_2))-np.log(d_1)))
+K = E/(h/(t*np.pi*(d_2-d_1))*(np.log(d_2)-np.log(d_1)))
 #K_2 = E*d_2*np.pi*t/h*10**-6
 print('Spacecraft adapter stiffness: ' +str(K*10**-6)+'kN/mm')
 #print(K_2)
@@ -29,13 +29,13 @@ w_f = 2*np.pi*100 #
 w_n = np.sqrt(k/m)
 f_0 = 0.8*g/m
 x_0 = 0
-v_0 = 0.0000001 #HAS TO BE RESONED FOR
+v_0 = 0.0 #HAS TO BE RESONED FOR
 
 def x_h(t):
-    return (x_0-f_0/(w_n**2-w_f**2))*np.cos(w_n*t)+v_0/w_n*np.sin(w_n*t)
+    return ((x_0-f_0/(w_n**2-w_f**2))*np.cos(w_n*t)+v_0/w_n*np.sin(w_n*t))*10**3
 
 def x_p(t):
-    return (f_0/(w_n**2-w_f**2))*np.cos(w_f*t)
+    return (f_0/(w_n**2-w_f**2))*np.cos(w_f*t)*10**3
 
 t = np.linspace(0,25,500)
 x = x_h(t)+x_p(t)
@@ -52,11 +52,31 @@ plt.legend(loc='upper left')
 plt.savefig('.\Solution.pdf', dpi=1200)
 plt.show()
 
-f = np.linspace(0.62,0.63,10000)
+print(f_0/2*w_n)
+t = np.linspace(0,25,1000)
+T = f_0/(2*w_n)*t*np.cos(w_n*t)*10**3
+line = f_0/(2*w_n)*t*10**(3)
+plt.plot(t,line, color='orange', linewidth=1, linestyle='dashed')
+plt.plot(t,-line, color='orange', linewidth=1, linestyle='dashed')
+plt.plot(t,T, color='green', linewidth=1)
+plt.xlabel('t [s]')
+plt.ylabel('x [mm]')
+plt.savefig('.\Resonancesol.pdf', dpi=1200)
+plt.show()
+
+f = np.linspace(0,100,10000)
 T = f_0/abs(w_n**2-(f*2*np.pi)**2)
 plt.plot(f,T, color='green', linewidth=1)
-plt.xlabel('\u03C9$_{f}$ [rad/s]')
-plt.ylabel('T []')
+plt.xlabel('f$_{f}$ [Hz]')
+plt.ylabel('T [m]')
 plt.savefig('.\Transient.pdf', dpi=1200)
+plt.show()
+
+f = np.linspace(0.62,0.622,10000)
+T = f_0/abs(w_n**2-(f*2*np.pi)**2)
+plt.plot(f,T, color='green', linewidth=1)
+plt.xlabel('f$_{f}$ [Hz]')
+plt.ylabel('T [m]')
+plt.savefig('.\Resonance.pdf', dpi=1200)
 plt.show()
 
