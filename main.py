@@ -14,7 +14,7 @@ mon25 = Propellant([1.6697, 4.622e-4, -4.80e-6])
 hydrazine = Propellant([1.23078, -6.2668e-4, -4.5284e-7])
 
 # Material definitions
-Ti_6Al_4V = Material(113.8e9, 0.342, 880e6, 4430, 1)
+Ti_6Al_4V = Material(113.8e9, 0.342, 828e6, 4430, 1)
 
 # Temperature
 T_hot = 357
@@ -43,11 +43,14 @@ hydrazine_t_2_pressure = hydrazine_tank_initial.t_2_pressure(SF_pressure)
 mon25_t_2_pressure = mon25_tank_initial.t_2_pressure(SF_pressure)
 
 # Loads
-hydrazine_tank_initial_load, mon25_tank_initial_load = loads(hydrazine_distance, mon25_distance)
+initial_loads = loads(hydrazine_distance, mon25_distance)
+hydrazine_tank_initial_load, mon25_tank_initial_load = 1.25 * initial_loads[0], 1.25 * initial_loads[1]
+#print(f'{hydrazine_tank_initial_load = }, {mon25_tank_initial_load = }')
 
 # Tank masses
 hydrazine_initial_mass = hydrazine_tank_initial.tank_mass(hydrazine_t_1_pressure, hydrazine_t_2_pressure)
 mon25_initial_mass = mon25_tank_initial.tank_mass(mon25_t_1_pressure, mon25_t_2_pressure)
+total_tank_mass = 2 * hydrazine_initial_mass + 2 * mon25_initial_mass
 
 print('------------ Initial iteration ------------')
 print(f'Hydrazine tank:')
@@ -81,8 +84,10 @@ print(f'        Passes Euler buckling check: {mon25_tank_initial.passes_Euler_bu
 print(f'        Stress due to launch loads: {mon25_tank_initial.compressive_stress(mon25_tank_initial_load, mon25_t_1_pressure) / 1e6} MPa')
 print(f'        Maximum stress for shell buckling: {mon25_tank_initial.shell_buckling(mon25_t_1_pressure) / 1e6} MPa')
 print(f'        Passes shell buckling check: {mon25_tank_initial.passes_shell_buckling_check(mon25_tank_initial_load, mon25_t_1_pressure, SF_shell)}')
+print(f'\nTotal tank mass: {total_tank_mass} kg')
 
-hydrazine_tank_updated_load, mon25_tank_updated_load = loads(hydrazine_distance, mon25_distance, 2 * (hydrazine_initial_mass + mon25_initial_mass))
+updated_loads = loads(hydrazine_distance, mon25_distance, 2 * (hydrazine_initial_mass + mon25_initial_mass))
+hydrazine_tank_updated_load, mon25_tank_updated_load = 1.25 * updated_loads[0], 1.25 * updated_loads[1]
 
 print('\n\n------------ Updated values iteration ------------')
 print(f'Hydrazine tank:')
@@ -96,3 +101,6 @@ print(f'    Failure checks:')
 print(f'        Stress due to launch loads: {mon25_tank_initial.compressive_stress(mon25_tank_updated_load, mon25_t_1_pressure) / 1e6} MPa')
 print(f'        Maximum stress for shell buckling: {mon25_tank_initial.shell_buckling(mon25_t_1_pressure) / 1e6} MPa')
 print(f'        Passes shell buckling check: {mon25_tank_initial.passes_shell_buckling_check(mon25_tank_updated_load, mon25_t_1_pressure, SF_shell)}')
+
+#print(f'{hydrazine_tank_updated_load = }')
+#print(f'{mon25_tank_updated_load = }')

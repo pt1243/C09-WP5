@@ -148,6 +148,7 @@ class FuelTank:
         Q = (self.p / self.material.E) * (self.R / t_1)**2
         sigma_cr = (1.983 - 0.983 * exp(-23.14 * Q)) * k * (pi ** 2 * self.material.E) \
             / (12 * (1 - self.material.poissons_ratio ** 2)) * (t_1 / self.L) ** 2
+        #print(f'{k = }, {Q = }')
         return sigma_cr
 
     def tank_mass(self, t_1: Union[float, int], t_2: Union[float, int]) -> float:
